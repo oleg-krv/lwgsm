@@ -902,6 +902,17 @@ lwgsmi_parse_cipstatus_conn(const char* str, uint8_t is_conn_line, uint8_t* cont
         if (lwgsm.m.network.is_attached != tmp_pdp_state) {
             lwgsm.m.network.is_attached = tmp_pdp_state;
 
+            if (!tmp_pdp_state) {
+                for (size_t i = 0; i < LWGSM_CFG_MAX_CONNS; ++i) {  /* Check all connections */
+                    if (lwgsm.m.conns[i].status.f.active) {
+                        lwgsm.m.conns[i].status.f.active = 0;
+                        lwgsm.evt.evt.conn_active_close.conn = &lwgsm.m.conns[i];
+                        lwgsm.evt.evt.conn_active_close.client = lwgsm.m.conns[i].status.f.client;
+                        lwgsmi_send_conn_cb(&lwgsm.m.conns[i], NULL);   /* Send callback function */
+                    }
+                }
+            }
+
             /* Notify upper layer */
             lwgsmi_send_cb(lwgsm.m.network.is_attached ? LWGSM_EVT_NETWORK_ATTACHED : LWGSM_EVT_NETWORK_DETACHED);
         }
@@ -929,7 +940,7 @@ lwgsmi_parse_cipstatus_conn(const char* str, uint8_t is_conn_line, uint8_t* cont
     lwgsmi_parse_string(&str, s_tmp, sizeof(s_tmp), 1);
 
     /* TODO: Implement all connection states */
-    if (!strcmp(s_tmp, "INITIAL")) {
+	if (!strcmp(s_tmp, "INITIAL")) {
 
     } else if (!strcmp(s_tmp, "CONNECTING")) {
 
@@ -939,9 +950,9 @@ lwgsmi_parse_cipstatus_conn(const char* str, uint8_t is_conn_line, uint8_t* cont
 
     } else if (!strcmp(s_tmp, "CLOSING")) {
 
-    } else if (!strcmp(s_tmp, "CLOSED")) {      /* Connection closed */
-        if (conn->status.f.active) {            /* Check if connection is not */
-            lwgsmi_conn_closed_process(conn->num, 0);   /* Process closed event */
+    } else if (!strcmp(s_tmp, "CLOSED")) {                      /* Connection closed */
+        if (conn->status.f.active) {                            /* Check if connection is not */
+            lwgsmi_conn_closed_process(conn->num, 0);    /* Process closed event */
         }
     }
 
