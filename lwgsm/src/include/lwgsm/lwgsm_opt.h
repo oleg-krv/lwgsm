@@ -29,10 +29,13 @@
  * This file is part of LwGSM - Lightweight GSM-AT library.
  *
  * Author:          Tilen MAJERLE <tilen@majerle.eu>
- * Version:         $_version_$
+ * Version:         v0.1.0
  */
 #ifndef LWGSM_HDR_OPT_H
 #define LWGSM_HDR_OPT_H
+
+/* Uncomment to ignore user options (or set macro in compiler flags) */
+/* #define LWGSM_IGNORE_USER_OPTS */
 
 /* Include application options */
 #ifndef LWGSM_IGNORE_USER_OPTS

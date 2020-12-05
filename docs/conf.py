@@ -27,7 +27,7 @@ copyright = '2020, Tilen MAJERLE'
 author = 'Tilen MAJERLE'
 
 # The full version, including alpha/beta/rc tags
-version = ''
+version = 'v0.1.0'
 
 # Try to get branch at which this is running
 # and try to determine which version to display in sphinx
@@ -99,7 +99,7 @@ html_theme_options = {
     'includehidden': True,
     'titles_only': False
 }
-html_logo = 'static/images/logo_tm.png'
+html_logo = 'static/images/logo.svg'
 github_url = 'https://github.com/MaJerle/gsm-at-lib'
 html_baseurl = 'https://docs.majerle.eu/projects/gsm-at-lib/'
 
