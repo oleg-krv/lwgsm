@@ -29,7 +29,7 @@
  * This file is part of LwGSM - Lightweight GSM-AT library.
  *
  * Author:          Tilen MAJERLE <tilen@majerle.eu>
- * Version:         $_version_$
+ * Version:         v0.1.0
  */
 #include <limits.h>
 #include "lwgsm/lwgsm_private.h"
@@ -72,6 +72,11 @@ mem_insertfreeblock(mem_block_t* nb) {
 
     /* Find block position to insert new block between */
     for (ptr = &start_block; ptr != NULL && ptr->next < nb; ptr = ptr->next) {}
+
+    /* Check hard error on wrongly used memory */
+    if (ptr == NULL) {
+        return;
+    }
 
     /*
      * If the new inserted block and block before create a one big block (contiguous)
