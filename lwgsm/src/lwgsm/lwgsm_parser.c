@@ -950,9 +950,9 @@ lwgsmi_parse_cipstatus_conn(const char* str, uint8_t is_conn_line, uint8_t* cont
 
     } else if (!strcmp(s_tmp, "CLOSING")) {
 
-    } else if (!strcmp(s_tmp, "CLOSED")) {                      /* Connection closed */
-        if (conn->status.f.active) {                            /* Check if connection is not */
-            lwgsmi_conn_closed_process(conn->num, 0);    /* Process closed event */
+    } else if (!strcmp(s_tmp, "CLOSED")) {              /* Connection closed */
+        if (conn->status.f.active) {                    /* Check if connection is not */
+            lwgsmi_conn_closed_process(conn->num, 0);   /* Process closed event */
         }
     }
 

@@ -44,7 +44,7 @@
  * \brief           User thread to process input packets from API functions
  * \param[in]       arg: User argument. Semaphore to release when thread starts
  */
-void
+void __attribute__((noreturn))
 lwgsm_thread_produce(void* const arg) {
     lwgsm_sys_sem_t* sem = arg;
     lwgsm_t* e = &lwgsm;
@@ -182,7 +182,7 @@ lwgsm_thread_produce(void* const arg) {
  * \param[in]       arg: User argument. Semaphore to release when thread starts
  * \sa              LWGSM_CFG_INPUT_USE_PROCESS
  */
-void
+void __attribute__((noreturn))
 lwgsm_thread_process(void* const arg) {
     lwgsm_sys_sem_t* sem = arg;
     lwgsm_t* e = &lwgsm;
