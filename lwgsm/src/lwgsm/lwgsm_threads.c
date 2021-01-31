@@ -164,7 +164,7 @@ lwgsm_thread_produce(void* const arg) {
          * release semaphore and notify finished with processing
          * otherwise directly free memory of message structure
          */
-        if (msg->is_blocking) {
+        if (msg->is_blocking && msg->sem != NULL) {
             lwgsm_sys_sem_release(&msg->sem);
         } else {
             LWGSM_MSG_VAR_FREE(msg);
