@@ -243,7 +243,7 @@ lwgsm_core_unlock(void) {
  */
 uint8_t
 lwgsm_delay(uint32_t ms) {
-    lwgsm_sys_sem_t sem;
+    lwgsm_sys_sem_t sem = LWGSM_SYS_SEM_NULL;
     if (ms == 0) {
         return 1;
     }
