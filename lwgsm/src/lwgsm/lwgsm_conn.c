@@ -136,7 +136,7 @@ conn_send(lwgsm_conn_p conn, const lwgsm_ip_t* const ip, lwgsm_port_t port, cons
     LWGSM_MSG_VAR_REF(msg).msg.conn_send.remote_port = port;
     LWGSM_MSG_VAR_REF(msg).msg.conn_send.fau = fau;
     LWGSM_MSG_VAR_REF(msg).msg.conn_send.val_id = lwgsmi_conn_get_val_id(conn);
-
+    /* CIPSEND max execute time 645 */
     return lwgsmi_send_msg_to_producer_mbox(&LWGSM_MSG_VAR_REF(msg), lwgsmi_initiate_cmd, 60000);
 }
 
@@ -208,8 +208,8 @@ lwgsm_conn_start(lwgsm_conn_p* conn, lwgsm_conn_type_t type, const char* const h
     LWGSM_MSG_VAR_REF(msg).msg.conn_start.port = port;
     LWGSM_MSG_VAR_REF(msg).msg.conn_start.evt_func = conn_evt_fn;
     LWGSM_MSG_VAR_REF(msg).msg.conn_start.arg = arg;
-
-    return lwgsmi_send_msg_to_producer_mbox(&LWGSM_MSG_VAR_REF(msg), lwgsmi_initiate_cmd, 60000);
+    /* CIPSTART max execute 160 c */
+    return lwgsmi_send_msg_to_producer_mbox(&LWGSM_MSG_VAR_REF(msg), lwgsmi_initiate_cmd, 160000);
 }
 
 /**

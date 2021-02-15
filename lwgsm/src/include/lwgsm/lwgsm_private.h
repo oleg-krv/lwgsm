@@ -281,6 +281,7 @@ typedef struct lwgsm_conn {
             uint8_t data_received: 1;           /*!< Status whether first data were received on connection */
             uint8_t in_closing: 1;               /*!< Status if connection is in closing mode.
                                                     When in closing mode, ignore any possible received data from function */
+	    uint8_t in_connecting: 1;		/*!< Status whether connecting is active */
             uint8_t bearer: 1;                  /*!< Bearer used. Can be `1` or `0` */
         } f;                                    /*!< Connection flags */
     } status;                                   /*!< Connection status union with flag bits */

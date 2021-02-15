@@ -68,9 +68,11 @@ lwgsmr_t          lwgsm_netconn_delete(lwgsm_netconn_p nc);
 lwgsmr_t          lwgsm_netconn_connect(lwgsm_netconn_p nc, const char* host, lwgsm_port_t port);
 lwgsmr_t          lwgsm_netconn_receive(lwgsm_netconn_p nc, lwgsm_pbuf_p* pbuf);
 lwgsmr_t          lwgsm_netconn_close(lwgsm_netconn_p nc);
-int8_t          lwgsm_netconn_getconnnum(lwgsm_netconn_p nc);
-void            lwgsm_netconn_set_receive_timeout(lwgsm_netconn_p nc, uint32_t timeout);
-uint32_t        lwgsm_netconn_get_receive_timeout(lwgsm_netconn_p nc);
+int8_t            lwgsm_netconn_getconnnum(lwgsm_netconn_p nc);
+int8_t            lwgsm_netconn_getconnactive(lwgsm_netconn_p nc);
+void              lwgsm_netconn_set_receive_timeout(lwgsm_netconn_p nc, uint32_t timeout);
+uint32_t          lwgsm_netconn_get_receive_timeout(lwgsm_netconn_p nc);
+lwgsmr_t          lwgsm_netconn_shut(const lwgsm_api_cmd_evt_fn evt_fn, void* const evt_arg, const uint32_t blocking);
 
 /* TCP only */
 lwgsmr_t          lwgsm_netconn_write(lwgsm_netconn_p nc, const void* data, size_t btw);

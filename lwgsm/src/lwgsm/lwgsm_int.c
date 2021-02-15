@@ -413,6 +413,7 @@ reset_connections(uint8_t forced) {
     for (size_t i = 0; i < LWGSM_CFG_MAX_CONNS; ++i) {  /* Check all connections */
         if (lwgsm.m.conns[i].status.f.active) {
             lwgsm.m.conns[i].status.f.active = 0;
+            lwgsm.m.conns[i].status.f.in_connecting = 0;
 
             lwgsm.evt.evt.conn_active_close.conn = &lwgsm.m.conns[i];
             lwgsm.evt.evt.conn_active_close.client = lwgsm.m.conns[i].status.f.client;
@@ -659,6 +660,7 @@ lwgsmi_conn_closed_process(uint8_t conn_num, uint8_t forced) {
     lwgsm_conn_t* conn = &lwgsm.m.conns[conn_num];
 
     conn->status.f.active = 0;
+    conn->status.f.in_connecting = 0;
 
     /* Check if write buffer is set */
     if (conn->buff.buff != NULL) {
@@ -916,6 +918,7 @@ lwgsmi_parse_received(lwgsm_recv_t* rcv) {
                         LWGSM_MEMSET(conn, 0x00, sizeof(*conn));/* Reset connection parameters */
                         conn->num = num;
                         conn->status.f.active = 1;
+                        conn->status.f.in_connecting = 0;
                         conn->val_id = ++id;    /* Set new validation ID */
 
                         /* Set connection parameters */
@@ -927,6 +930,7 @@ lwgsmi_parse_received(lwgsm_recv_t* rcv) {
                         lwgsm.msg->msg.conn_start.conn_res = LWGSM_CONN_CONNECT_OK;
                         is_ok = 1;
                     } else if (!strncmp(&rcv->data[3], "CONNECT FAIL" CRLF, 12 + CRLF_LEN)) {
+                        conn->status.f.in_connecting = 0;
                         lwgsm.msg->msg.conn_start.conn_res = LWGSM_CONN_CONNECT_ERROR;
                         is_error = 1;
                     } else if (!strncmp(&rcv->data[3], "ALREADY CONNECT" CRLF, 15 + CRLF_LEN)) {
@@ -1241,7 +1245,10 @@ lwgsmi_process(const void* data, size_t data_len) {
                          *  - Connection is active and
                          *  - Connection is not in closing mode
                          */
-                        if (lwgsm.m.ipd.conn->status.f.active && !lwgsm.m.ipd.conn->status.f.in_closing) {
+                        if (lwgsm.m.ipd.conn->status.f.active &&
+                            !lwgsm.m.ipd.conn->status.f.in_closing &&
+                            !lwgsm.m.ipd.conn->status.f.in_connecting) {
+
                             lwgsm.m.ipd.buff = lwgsm_pbuf_new(len); /* Allocate new packet buffer */
                             LWGSM_DEBUGW(LWGSM_CFG_DBG_IPD | LWGSM_DBG_TYPE_TRACE | LWGSM_DBG_LVL_WARNING, lwgsm.m.ipd.buff == NULL,
                                        "[IPD] Buffer allocation failed for %d byte(s)\r\n", (int)len);
@@ -1943,18 +1950,19 @@ lwgsmi_initiate_cmd(lwgsm_msg_t* msg) {
             if (msg->msg.conn_start.conn != NULL) { /* Is user interested about connection info? */
                 *msg->msg.conn_start.conn = c;  /* Save connection for user */
             }
-
-            AT_PORT_SEND_BEGIN_AT();
-            AT_PORT_SEND_CONST_STR("+CIPSTART=");
-            lwgsmi_send_number(LWGSM_U32(c->num), 0, 0);
-            if (msg->msg.conn_start.type == LWGSM_CONN_TYPE_TCP) {
-                lwgsmi_send_string("TCP", 0, 1, 1);
-            } else if (msg->msg.conn_start.type == LWGSM_CONN_TYPE_UDP) {
-                lwgsmi_send_string("UDP", 0, 1, 1);
+            if (!c->status.f.in_connecting) {
+                AT_PORT_SEND_BEGIN_AT();
+                AT_PORT_SEND_CONST_STR("+CIPSTART=");
+                lwgsmi_send_number(LWGSM_U32(c->num), 0, 0);
+                if (msg->msg.conn_start.type == LWGSM_CONN_TYPE_TCP) {
+                    lwgsmi_send_string("TCP", 0, 1, 1);
+                } else if (msg->msg.conn_start.type == LWGSM_CONN_TYPE_UDP) {
+                    lwgsmi_send_string("UDP", 0, 1, 1);
+                }
+                lwgsmi_send_string(msg->msg.conn_start.host, 0, 1, 1);
+                lwgsmi_send_port(msg->msg.conn_start.port, 0, 1);
+                AT_PORT_SEND_END_AT();
             }
-            lwgsmi_send_string(msg->msg.conn_start.host, 0, 1, 1);
-            lwgsmi_send_port(msg->msg.conn_start.port, 0, 1);
-            AT_PORT_SEND_END_AT();
             break;
         }
         case LWGSM_CMD_CIPCLOSE: {              /* Close the connection */
@@ -1967,6 +1975,7 @@ lwgsmi_initiate_cmd(lwgsm_msg_t* msg) {
             AT_PORT_SEND_BEGIN_AT();
             AT_PORT_SEND_CONST_STR("+CIPCLOSE=");
             lwgsmi_send_number(LWGSM_U32(msg->msg.conn_close.conn ? msg->msg.conn_close.conn->num : LWGSM_CFG_MAX_CONNS), 0, 0);
+		//lwgsmi_send_string("0", 0, 0, 1);
             AT_PORT_SEND_END_AT();
             break;
         }

@@ -904,8 +904,9 @@ lwgsmi_parse_cipstatus_conn(const char* str, uint8_t is_conn_line, uint8_t* cont
 
             if (!tmp_pdp_state) {
                 for (size_t i = 0; i < LWGSM_CFG_MAX_CONNS; ++i) {  /* Check all connections */
-                    if (lwgsm.m.conns[i].status.f.active) {
+                    if (lwgsm.m.conns[i].status.f.active || lwgsm.m.conns[i].status.f.in_connecting) {
                         lwgsm.m.conns[i].status.f.active = 0;
+                        lwgsm.m.conns[i].status.f.in_connecting = 0;
                         lwgsm.evt.evt.conn_active_close.conn = &lwgsm.m.conns[i];
                         lwgsm.evt.evt.conn_active_close.client = lwgsm.m.conns[i].status.f.client;
                         lwgsmi_send_conn_cb(&lwgsm.m.conns[i], NULL);   /* Send callback function */
@@ -943,7 +944,7 @@ lwgsmi_parse_cipstatus_conn(const char* str, uint8_t is_conn_line, uint8_t* cont
 	if (!strcmp(s_tmp, "INITIAL")) {
 
     } else if (!strcmp(s_tmp, "CONNECTING")) {
-
+        conn->status.f.in_connecting = 1;
     } else if (!strcmp(s_tmp, "CONNECTED")) {
 
     } else if (!strcmp(s_tmp, "REMOTE CLOSING")) {

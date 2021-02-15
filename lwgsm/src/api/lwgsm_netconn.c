@@ -283,6 +283,17 @@ lwgsm_netconn_delete(lwgsm_netconn_p nc) {
     return lwgsmOK;
 }
 
+lwgsmr_t
+lwgsm_netconn_shut(const lwgsm_api_cmd_evt_fn evt_fn, void* const evt_arg, const uint32_t blocking) {
+    LWGSM_MSG_VAR_DEFINE(msg);
+
+    LWGSM_MSG_VAR_ALLOC(msg, blocking);
+    LWGSM_MSG_VAR_SET_EVT(msg, evt_fn, evt_arg);
+    LWGSM_MSG_VAR_REF(msg).cmd_def = LWGSM_CMD_CIPSHUT;
+
+    return lwgsmi_send_msg_to_producer_mbox(&LWGSM_MSG_VAR_REF(msg), lwgsmi_initiate_cmd, 65000);
+}
+
 /**
  * \brief           Connect to server as client
  * \param[in]       nc: Netconn handle
@@ -404,18 +415,18 @@ lwgsm_netconn_flush(lwgsm_netconn_p nc) {
     LWGSM_ASSERT("nc != NULL", nc != NULL);
     LWGSM_ASSERT("nc->type must be TCP or SSL", nc->type == LWGSM_NETCONN_TYPE_TCP || nc->type == LWGSM_NETCONN_TYPE_SSL);
     LWGSM_ASSERT("nc->conn must be active", lwgsm_conn_is_active(nc->conn));
-
+    lwgsmr_t res = lwgsmOK;
     /*
      * In case we have data in write buffer,
      * flush them out to network
      */
     if (nc->buff.buff != NULL) {                /* Check remaining data */
         if (nc->buff.ptr > 0) {                 /* Do we have data in current buffer? */
-            lwgsm_conn_send(nc->conn, nc->buff.buff, nc->buff.ptr, NULL, 1);/* Send data */
+            res = lwgsm_conn_send(nc->conn, nc->buff.buff, nc->buff.ptr, NULL, 1);/* Send data */
         }
         lwgsm_mem_free_s((void**)&nc->buff.buff);
     }
-    return lwgsmOK;
+    return res;
 }
 
 /**
@@ -524,6 +535,14 @@ lwgsm_netconn_getconnnum(lwgsm_netconn_p nc) {
         return lwgsm_conn_getnum(nc->conn);
     }
     return -1;
+}
+
+int8_t
+lwgsm_netconn_getconnactive(lwgsm_netconn_p nc) {
+	if (nc != NULL && nc->conn != NULL) {
+		return lwgsm_conn_is_active(nc->conn);
+	}
+	return 0;
 }
 
 #if LWGSM_CFG_NETCONN_RECEIVE_TIMEOUT || __DOXYGEN__
